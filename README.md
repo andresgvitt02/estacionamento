@@ -1,6 +1,17 @@
 # Estacionamento
 
-Sistema de gerenciamento de estacionamento — Trabalho de Conclusão de Curso (TCC).
+Sistema web de gerenciamento de estacionamento para operações de pequeno e
+médio porte. TCC / Projeto Tecnológico — Análise e Desenvolvimento de
+Sistemas, ULBRA Torres.
+
+Autor: Andres Gonçalves Vitt. Orientador: Daniel Souza Vargas.
+
+## Stack
+
+- **Frontend:** React
+- **Backend:** Node.js + Express
+- **Banco:** PostgreSQL
+- **Comunicação:** API REST
 
 ## Estrutura do repositório
 
@@ -15,7 +26,7 @@ estacionamento/
 
 ## Como rodar
 
-> _A preencher conforme o stack de backend/frontend for definido._
+> _A preencher conforme o setup de cada camada for implementado._
 
 ### Backend
 
