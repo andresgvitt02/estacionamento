@@ -1,0 +1,492 @@
+:root {
+  --cor-fundo: #f4f5f7;
+  --cor-superficie: #ffffff;
+  --cor-borda: #d9dce1;
+  --cor-texto: #1b1f24;
+  --cor-texto-suave: #5b6270;
+  --cor-primaria: #2454b3;
+  --cor-primaria-texto: #ffffff;
+
+  /* Status de vaga: livre/ocupada deliberadamente NÃO usam o par
+     verde/vermelho (ver StatusBadge.jsx). Cada uma tem cor + ícone + texto. */
+  --cor-livre-fundo: #e4f6ea;
+  --cor-livre-texto: #196a3a;
+  --cor-ocupada-fundo: #e5edfb;
+  --cor-ocupada-texto: #1c3f8f;
+  --cor-bloqueada-fundo: #fdeecb;
+  --cor-bloqueada-texto: #8a5a00;
+
+  --cor-erro: #b3261e;
+  --cor-erro-fundo: #fbe9e7;
+  --cor-aviso-fundo: #fff6e0;
+  --cor-aviso-texto: #7a5b00;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --cor-fundo: #14161a;
+    --cor-superficie: #1e2126;
+    --cor-borda: #33363d;
+    --cor-texto: #eef0f3;
+    --cor-texto-suave: #a3a9b4;
+    --cor-primaria: #6d9bff;
+    --cor-primaria-texto: #0c1424;
+
+    --cor-livre-fundo: #103824;
+    --cor-livre-texto: #6fe0a0;
+    --cor-ocupada-fundo: #142a4d;
+    --cor-ocupada-texto: #8fb4ff;
+    --cor-bloqueada-fundo: #3a2c05;
+    --cor-bloqueada-texto: #f0c05a;
+
+    --cor-erro: #ff8a80;
+    --cor-erro-fundo: #3a1613;
+    --cor-aviso-fundo: #332a05;
+    --cor-aviso-texto: #f0d060;
+
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--cor-fundo);
+  color: var(--cor-texto);
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--cor-primaria);
+}
+
+/* --- Layout --- */
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--cor-superficie);
+  border-bottom: 1px solid var(--cor-borda);
+  flex-wrap: wrap;
+}
+
+.app-titulo {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.app-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.app-nav a {
+  text-decoration: none;
+  color: var(--cor-texto-suave);
+  padding: 0.25rem 0;
+  border-bottom: 2px solid transparent;
+}
+
+.app-nav a.active {
+  color: var(--cor-texto);
+  border-bottom-color: var(--cor-primaria);
+}
+
+.app-sessao {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--cor-texto-suave);
+}
+
+.app-sessao-vazia {
+  font-style: italic;
+}
+
+.app-conteudo {
+  flex: 1;
+  padding: 1.5rem;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.pagina-estreita {
+  max-width: 420px;
+}
+
+.pagina-login {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.pagina-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.legenda {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* --- Botões --- */
+
+.botao-primario,
+.botao-secundario {
+  border-radius: 6px;
+  padding: 0.5rem 1rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.botao-primario {
+  background: var(--cor-primaria);
+  color: var(--cor-primaria-texto);
+}
+
+.botao-primario:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.botao-secundario {
+  background: transparent;
+  border-color: var(--cor-borda);
+  color: var(--cor-texto);
+}
+
+.botao-pequeno {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+}
+
+.botao-link {
+  background: none;
+  border: none;
+  color: var(--cor-primaria);
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.botao-icone {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--cor-texto-suave);
+  padding: 0.25rem;
+}
+
+/* --- Badges de status/tipo --- */
+
+.status-badge,
+.tipo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-livre {
+  background: var(--cor-livre-fundo);
+  color: var(--cor-livre-texto);
+}
+
+.status-ocupada {
+  background: var(--cor-ocupada-fundo);
+  color: var(--cor-ocupada-texto);
+}
+
+.status-bloqueada {
+  background: var(--cor-bloqueada-fundo);
+  color: var(--cor-bloqueada-texto);
+}
+
+.tipo-badge {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  color: var(--cor-texto-suave);
+}
+
+/* --- Grade de vagas --- */
+
+.vagas-grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.vaga-card {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-left: 4px solid var(--cor-borda);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.vaga-card--livre {
+  border-left-color: var(--cor-livre-texto);
+}
+
+.vaga-card--ocupada {
+  border-left-color: var(--cor-ocupada-texto);
+}
+
+.vaga-card--bloqueada {
+  border-left-color: var(--cor-bloqueada-texto);
+}
+
+.vaga-card-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vaga-codigo {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.vaga-placa {
+  font-family: 'Courier New', monospace;
+  font-size: 1rem;
+  margin: 0;
+}
+
+.vaga-motivo {
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+  margin: 0;
+}
+
+.vaga-card-tipos {
+  display: flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.vaga-card-acoes {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.4rem;
+}
+
+/* --- Formulários --- */
+
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.formulario label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* Variante em linha (ex.: filtro de período de um relatório) — sem o
+   empilhamento vertical padrão do .formulario. */
+.formulario-linha {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.formulario-linha label {
+  margin-top: 0;
+}
+
+.formulario input,
+.formulario select,
+.formulario textarea {
+  padding: 0.5rem;
+  border: 1px solid var(--cor-borda);
+  border-radius: 6px;
+  background: var(--cor-fundo);
+  font: inherit;
+}
+
+.formulario-subtitulo {
+  margin: 0 0 0.25rem;
+  color: var(--cor-texto-suave);
+}
+
+.formulario-ajuda {
+  margin: -0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+}
+
+.formulario-acoes {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.mensagem-erro {
+  background: var(--cor-erro-fundo);
+  color: var(--cor-erro);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.mensagem-aviso {
+  background: var(--cor-aviso-fundo);
+  color: var(--cor-aviso-texto);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.mensagem-sucesso {
+  background: var(--cor-livre-fundo);
+  color: var(--cor-livre-texto);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+/* --- Saída de veículo (SaidaForm) --- */
+
+.saida-valor-devido {
+  font-size: 1.05rem;
+  margin: 0;
+}
+
+.saida-pagamento {
+  border: 1px solid var(--cor-borda);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem 0.75rem;
+  margin: 0.5rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.saida-pagamento legend {
+  padding: 0 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--cor-texto-suave);
+}
+
+/* --- Colunas (ex.: formulário + histórico lado a lado) --- */
+
+.pagina-colunas {
+  display: grid;
+  grid-template-columns: minmax(280px, 380px) 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .pagina-colunas {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --- Tabelas --- */
+
+.tabela-scroll {
+  overflow-x: auto;
+}
+
+.tabela {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.valor-divergente {
+  color: var(--cor-erro);
+  font-weight: 600;
+}
+
+.tabela th,
+.tabela td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.tabela th {
+  color: var(--cor-texto-suave);
+  font-weight: 600;
+}
+
+/* --- Modal --- */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 10;
+}
+
+.modal {
+  background: var(--cor-superficie);
+  border-radius: 10px;
+  padding: 1rem 1.25rem 1.25rem;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-cabecalho h2 {
+  font-size: 1.1rem;
+  margin: 0;
+}
