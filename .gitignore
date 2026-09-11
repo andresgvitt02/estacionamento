@@ -25,3 +25,7 @@ venv/
 
 # Logs
 *.log
+
+# Sessão autenticada do WhatsApp (Baileys) — é credencial, nunca comitar
+backend/scripts/.baileys_auth/
+backend/src/notificacao/canais/.baileys_auth/

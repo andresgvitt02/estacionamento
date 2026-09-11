@@ -26,20 +26,31 @@ estacionamento/
 
 ## Como rodar
 
-> _A preencher conforme o setup de cada camada for implementado._
-
 ### Backend
+
+Pré-requisito: PostgreSQL rodando localmente (ou acessível via `DATABASE_URL`).
 
 ```bash
 cd backend
-# instruções de setup aqui
+npm install
+cp .env.example .env      # ajuste DATABASE_URL se necessário
+createdb estacionamento   # ou crie o banco manualmente
+npm run migrate:up        # aplica as migrations em backend/migrations/
+npm run dev                # sobe a API com reload automático
 ```
+
+Ver [`docs/modelagem-banco.md`](docs/modelagem-banco.md) para o desenho das
+tabelas e o porquê de cada decisão de modelagem.
 
 ### Frontend
 
+Pré-requisito: backend rodando em `localhost:3000` (o Vite já faz proxy de
+`/api` pra lá em dev, ver `frontend/vite.config.js`).
+
 ```bash
 cd frontend
-# instruções de setup aqui
+npm install
+npm run dev
 ```
 
 ## Documentação
