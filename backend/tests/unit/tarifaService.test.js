@@ -71,4 +71,26 @@ describe('tarifaService.calcularValor', () => {
 
     expect(() => tarifaService.calcularValor(tarifaBase, entrada, saida)).toThrow();
   });
+
+  // Regressão: o `pg` devolve coluna NUMERIC como STRING, não number (evita
+  // perder precisão decimal) — uma tarifa vinda de verdade do banco chega
+  // aqui com valor_hora/percentual_fracao/arredondamento como string. Um bug
+  // encontrado em revisão fazia `valor_hora + valorExcedente` virar
+  // concatenação de string (ex.: "15.00" + 15 = "15.0015") para qualquer
+  // permanência acima da 1ª hora, cobrando um valor muito menor que o devido
+  // sem erro nenhum. Este teste usa exatamente o formato que vem do banco
+  // pra impedir que essa regressão volte sem quebrar o suite.
+  test('calcula corretamente quando a tarifa vem com campos NUMERIC como string (formato real do pg)', () => {
+    const tarifaComoViriaDoPg = {
+      valor_hora: '15.00',
+      tolerancia_minutos: 0,
+      percentual_fracao: '100.00',
+      minutos_fracao: 60,
+      arredondamento: '0.50',
+    };
+    const entrada = dataEm(10, 0);
+    const saida = dataEm(12, 10); // 2h10min: 1ª hora + 2 blocos de 60min a 100%
+
+    expect(tarifaService.calcularValor(tarifaComoViriaDoPg, entrada, saida)).toBe(45);
+  });
 });

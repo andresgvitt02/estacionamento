@@ -49,7 +49,18 @@ const ApiError = require('../errors/ApiError');
 const PRIMEIRA_HORA_MINUTOS = 60;
 
 function calcularValor(tarifa, entrada, saida) {
-  const { valor_hora, tolerancia_minutos, percentual_fracao, minutos_fracao, arredondamento } = tarifa;
+  // Colunas NUMERIC (valor_hora, percentual_fracao, arredondamento) chegam do
+  // `pg` como STRING, não como number — é assim que o driver evita perder
+  // precisão decimal, e backend/src/config/db.js não registra type parser
+  // pra mudar isso (de propósito: mexer nisso afetaria toda NUMERIC do app).
+  // Sem esta conversão, `valor_hora + valorExcedente` na decisão 3 faz
+  // CONCATENAÇÃO de string (bug real encontrado em revisão: 2h10min a
+  // R$15,00/h virava R$15,50 em vez de R$45,00). tolerancia_minutos e
+  // minutos_fracao são INTEGER e já vêm como number — não precisam disso.
+  const { tolerancia_minutos, percentual_fracao: percentualFracaoRaw, minutos_fracao, arredondamento: arredondamentoRaw } = tarifa;
+  const valor_hora = Number(tarifa.valor_hora);
+  const percentual_fracao = Number(percentualFracaoRaw);
+  const arredondamento = Number(arredondamentoRaw);
 
   const permanenciaMinutos = (new Date(saida).getTime() - new Date(entrada).getTime()) / 60000;
 
