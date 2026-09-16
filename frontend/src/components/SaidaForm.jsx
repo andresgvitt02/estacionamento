@@ -1,19 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { estimarValorSaida, registrarSaida } from '../api/movimentacoes'
+import { arredondarCentavos as arredondar, formatarReais } from '../utils/formato'
 
 const FORMAS = [
   { valor: 'dinheiro', texto: 'Dinheiro' },
   { valor: 'pix', texto: 'PIX' },
   { valor: 'cartao', texto: 'Cartão' },
 ]
-
-function arredondar(valor) {
-  return Math.round(valor * 100) / 100
-}
-
-function formatarReais(valor) {
-  return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
 
 export default function SaidaForm({ vaga, onSucesso, onCancelar }) {
   // Token gerado uma única vez, na abertura desta tela (CLAUDE.md,

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { buscarTarifaVigente, criarTarifa, listarTarifas } from '../api/tarifas'
+import { formatarReais, formatarData } from '../utils/formato'
 
 const CAMPOS_INICIAIS = {
   descricao: '',
@@ -9,14 +10,6 @@ const CAMPOS_INICIAIS = {
   minutosFracao: '60',
   arredondamento: '0.50',
   dataInicio: '',
-}
-
-function formatarReais(valor) {
-  return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
-
-function formatarData(iso) {
-  return new Date(iso).toLocaleString('pt-BR')
 }
 
 export default function Tarifas() {

@@ -1,15 +1,8 @@
 import { useState } from 'react'
 import { buscarMovimentacoesPorPeriodo, buscarResumoTurnos, buscarTotaisPorFormaPagamento } from '../api/relatorios'
+import { formatarReais, formatarData } from '../utils/formato'
 
 const NOMES_FORMA = { dinheiro: 'Dinheiro', pix: 'PIX', cartao: 'Cartão' }
-
-function formatarReais(valor) {
-  return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
-
-function formatarData(iso) {
-  return new Date(iso).toLocaleString('pt-BR')
-}
 
 // Converte um <input type="datetime-local"> (hora local, sem timezone) pra
 // ISO antes de mandar pro backend — a query string não carrega timezone

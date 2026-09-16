@@ -2,10 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { fecharTurno } from '../api/turnos'
 import { useTurnoAtivo } from '../context/TurnoContext'
-
-function formatarReais(valor) {
-  return Number(valor).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-}
+import { formatarReais } from '../utils/formato'
 
 export default function FecharTurno() {
   const navigate = useNavigate()
