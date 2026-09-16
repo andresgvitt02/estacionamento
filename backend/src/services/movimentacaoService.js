@@ -8,6 +8,7 @@ const transacaoRepository = require('../repositories/transacaoRepository');
 const logAuditoriaRepository = require('../repositories/logAuditoriaRepository');
 const tarifaService = require('./tarifaService');
 const ApiError = require('../errors/ApiError');
+const { arredondarCentavos } = require('../utils/dinheiro');
 
 // Entrada: validação de vaga/veículo + achar a tarifa vigente. É CRUD com
 // checagem de estado, não decide valor nenhum — por isso está implementada.
@@ -30,14 +31,22 @@ async function registrarEntrada({ veiculo, vagaId, usuarioId, telefoneContato })
   const vagaOcupada = await movimentacaoRepository.findAbertaPorVaga(vagaId);
   if (vagaOcupada) throw new ApiError(409, 'vaga já está ocupada');
 
-  const [veiculoExistente] = await veiculoRepository.findByPlaca(veiculo.placa);
+  // Normaliza a placa aqui, não só no frontend (EntradaForm.jsx já faz
+  // trim+uppercase, mas o servidor não pode confiar nisso — mesmo princípio
+  // do CLAUDE.md de "o servidor recalcula sempre", aplicado agora à
+  // identidade do veículo): sem isso, "abc1234" e "ABC1234" seriam tratados
+  // como veículos diferentes (WHERE placa = $1 é case-sensitive), permitindo
+  // o mesmo carro ocupar duas vagas ao mesmo tempo.
+  const veiculoNormalizado = { ...veiculo, placa: veiculo.placa.trim().toUpperCase() };
+
+  const [veiculoExistente] = await veiculoRepository.findByPlaca(veiculoNormalizado.placa);
   let veiculoRegistrado = veiculoExistente;
 
   if (veiculoRegistrado) {
     const veiculoDentro = await movimentacaoRepository.findAbertaPorVeiculo(veiculoRegistrado.id);
     if (veiculoDentro) throw new ApiError(409, 'veículo já está dentro do estacionamento');
   } else {
-    veiculoRegistrado = await veiculoRepository.create(veiculo);
+    veiculoRegistrado = await veiculoRepository.create(veiculoNormalizado);
   }
 
   const tarifa = await tarifaRepository.buscarVigente();
@@ -169,10 +178,6 @@ async function registrarSaida({ movimentacaoId, usuarioId, pagamentos, idempoten
 
     return { ...movimentacaoFechada, pagamentos: pagamentosRegistrados };
   });
-}
-
-function arredondarCentavos(valor) {
-  return Math.round(valor * 100) / 100;
 }
 
 // Preview do valor a cobrar SE a saída fosse feita agora. Não persiste nada —

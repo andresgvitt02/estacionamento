@@ -13,8 +13,12 @@ async function findByMovimentacao(movimentacaoId) {
   return rows;
 }
 
-async function findByTurno(turnoId) {
-  const { rows } = await pool.query(
+// Aceita client opcional (default = pool) pelo mesmo motivo de `create`:
+// turnoService.fechar precisa ler os pagamentos do turno de dentro da mesma
+// transação que o fecha, pra não perder um pagamento registrado concorrentemente
+// entre a leitura e o COMMIT.
+async function findByTurno(turnoId, client = pool) {
+  const { rows } = await client.query(
     'SELECT * FROM pagamentos WHERE turno_id = $1 ORDER BY criado_em',
     [turnoId]
   );

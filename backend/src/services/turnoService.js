@@ -3,6 +3,7 @@ const pagamentoRepository = require('../repositories/pagamentoRepository');
 const transacaoRepository = require('../repositories/transacaoRepository');
 const logAuditoriaRepository = require('../repositories/logAuditoriaRepository');
 const ApiError = require('../errors/ApiError');
+const { arredondarCentavos } = require('../utils/dinheiro');
 
 // Abertura de turno: só valida que o operador não tem outro turno aberto (o
 // índice único parcial idx_turnos_usuario_unico_aberto garante isso no banco;
@@ -49,16 +50,24 @@ async function fechar(turnoId, { usuarioId, valorDeclarado, observacoes } = {}) 
     throw new ApiError(422, 'valorDeclarado é obrigatório e precisa ser um número maior ou igual a zero');
   }
 
-  const pagamentosDoTurno = await pagamentoRepository.findByTurno(turnoId);
-  const somaDinheiro = pagamentosDoTurno
-    .filter((p) => p.forma === 'dinheiro')
-    .reduce((soma, p) => soma + Number(p.valor) * (p.estorno_de_id ? -1 : 1), 0);
-
-  const valorEsperado = arredondarCentavos(Number(turno.valor_inicial) + somaDinheiro);
-  const valorDeclaradoArredondado = arredondarCentavos(Number(valorDeclarado));
-  const divergencia = arredondarCentavos(valorDeclaradoArredondado - valorEsperado);
-
   return transacaoRepository.executar(async (client) => {
+    // Lê os pagamentos de DENTRO da transação que fecha o turno (bug
+    // encontrado em revisão: antes essa leitura rodava antes do BEGIN, então
+    // um pagamento em dinheiro registrado nesse intervalo — ex. uma saída
+    // concorrente do mesmo turno — ficava fora do valorEsperado calculado
+    // abaixo, mesmo já tendo entrado na gaveta). Isso estreita a janela de
+    // corrida; não elimina 100% a possibilidade de uma inserção concorrente
+    // entre esta leitura e o COMMIT, mas reduz de "qualquer tempo antes da
+    // requisição" pra "dentro desta transação".
+    const pagamentosDoTurno = await pagamentoRepository.findByTurno(turnoId, client);
+    const somaDinheiro = pagamentosDoTurno
+      .filter((p) => p.forma === 'dinheiro')
+      .reduce((soma, p) => soma + Number(p.valor) * (p.estorno_de_id ? -1 : 1), 0);
+
+    const valorEsperado = arredondarCentavos(Number(turno.valor_inicial) + somaDinheiro);
+    const valorDeclaradoArredondado = arredondarCentavos(Number(valorDeclarado));
+    const divergencia = arredondarCentavos(valorDeclaradoArredondado - valorEsperado);
+
     const turnoFechado = await turnoRepository.fechar(
       turnoId,
       { valorEsperado, valorDeclarado: valorDeclaradoArredondado, observacoes },
@@ -83,10 +92,6 @@ async function fechar(turnoId, { usuarioId, valorDeclarado, observacoes } = {}) 
 
     return { ...turnoFechado, divergencia };
   });
-}
-
-function arredondarCentavos(valor) {
-  return Math.round(valor * 100) / 100;
 }
 
 module.exports = { abrir, fechar };
