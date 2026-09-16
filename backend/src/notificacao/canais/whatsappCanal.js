@@ -84,7 +84,14 @@ function conectar() {
 async function enviar(destino, mensagem) {
   const sock = await conectar();
 
-  const [resultado] = await sock.onWhatsApp(destino);
+  // Normaliza antes de perguntar ao servidor: onWhatsApp() só remove um '+'
+  // inicial (confirmado no código do Baileys), não espaços/parênteses/hífen.
+  // O campo de telefone não tem máscara (ver EntradaForm.jsx) — um número
+  // digitado como "(51) 99999-8888" fazia essa consulta falhar sempre, mesmo
+  // sendo válido, e a notificação nunca saía (bug encontrado em revisão).
+  const destinoNormalizado = destino.replace(/\D/g, '');
+
+  const [resultado] = await sock.onWhatsApp(destinoNormalizado);
   if (!resultado?.exists) {
     throw new Error(`número ${destino} não encontrado no WhatsApp`);
   }
