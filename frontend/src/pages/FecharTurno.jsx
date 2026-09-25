@@ -27,13 +27,24 @@ export default function FecharTurno() {
         valorDeclarado: Number(valorDeclarado),
         observacoes: observacoes.trim() || null,
       })
+      // encerrarSessaoLocal() NÃO roda aqui de propósito (bug encontrado
+      // rodando o fluxo real: ver git log). Turno.jsx decide qual tela
+      // mostrar com base em turnoAtivo — zerar turnoAtivo no mesmo instante
+      // em que setResultado roda faz os dois setState baterem no mesmo
+      // render, e Turno.jsx troca pra <AbrirTurno/> antes deste componente
+      // chegar a exibir o resumo. turnoAtivo só é zerado quando o operador
+      // sai desta tela (botão abaixo), depois de já ter visto o resultado.
       setResultado(turnoFechado)
-      encerrarSessaoLocal()
     } catch (err) {
       setErro(err.message)
     } finally {
       setEnviando(false)
     }
+  }
+
+  function voltarAoMapa() {
+    encerrarSessaoLocal()
+    navigate('/')
   }
 
   if (resultado) {
@@ -70,7 +81,7 @@ export default function FecharTurno() {
         )}
 
         <div className="formulario-acoes">
-          <button type="button" className="botao-primario" onClick={() => navigate('/')}>
+          <button type="button" className="botao-primario" onClick={voltarAoMapa}>
             Voltar ao mapa de vagas
           </button>
         </div>
