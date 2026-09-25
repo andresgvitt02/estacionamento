@@ -147,6 +147,41 @@ describe('movimentacaoService.registrarSaida', () => {
     );
   });
 
+  test('rejeita forma de pagamento fora de dinheiro/pix/cartao', async () => {
+    await expect(
+      movimentacaoService.registrarSaida({
+        movimentacaoId: 42,
+        usuarioId: 5,
+        pagamentos: [{ forma: 'boleto', valor: 10 }],
+        idempotencyKey: 'tok-1',
+      })
+    ).rejects.toThrow(/forma de pagamento inválida/);
+
+    expect(movimentacaoRepository.registrarSaida).not.toHaveBeenCalled();
+  });
+
+  test('rejeita valor de pagamento negativo', async () => {
+    await expect(
+      movimentacaoService.registrarSaida({
+        movimentacaoId: 42,
+        usuarioId: 5,
+        pagamentos: [{ forma: 'pix', valor: -10 }],
+        idempotencyKey: 'tok-1',
+      })
+    ).rejects.toThrow(/valor do pagamento/);
+  });
+
+  test('rejeita dinheiro sem valorRecebido nenhum (não só menor que o valor)', async () => {
+    await expect(
+      movimentacaoService.registrarSaida({
+        movimentacaoId: 42,
+        usuarioId: 5,
+        pagamentos: [{ forma: 'dinheiro', valor: 10 }], // sem valorRecebido
+        idempotencyKey: 'tok-1',
+      })
+    ).rejects.toThrow(/valorRecebido/);
+  });
+
   test('pagamento em dinheiro exige valorRecebido >= valor e grava troco', async () => {
     await movimentacaoService.registrarSaida({
       movimentacaoId: 42,
@@ -185,6 +220,61 @@ describe('movimentacaoService.registrarSaida', () => {
 
     expect(pagamentoRepository.create).toHaveBeenCalledTimes(2);
     expect(movimentacaoRepository.registrarSaida).toHaveBeenCalled();
+  });
+
+  test('aceita dois pagamentos em dinheiro na mesma saída, cada um com seu próprio troco', async () => {
+    await movimentacaoService.registrarSaida({
+      movimentacaoId: 42,
+      usuarioId: 5,
+      pagamentos: [
+        { forma: 'dinheiro', valor: 6, valorRecebido: 10 }, // troco 4
+        { forma: 'dinheiro', valor: 4, valorRecebido: 4 }, // troco 0
+      ],
+      idempotencyKey: 'tok-1',
+    });
+
+    expect(pagamentoRepository.create).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ forma: 'dinheiro', valor: 6, valorRecebido: 10, troco: 4 }),
+      { fake: 'client' }
+    );
+    expect(pagamentoRepository.create).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ forma: 'dinheiro', valor: 4, valorRecebido: 4, troco: 0 }),
+      { fake: 'client' }
+    );
+  });
+
+  // Regressão de imprecisão de ponto flutuante (mesma família do bug de
+  // concatenação de string em tarifaService — ver comentário lá): 0.1 + 0.2
+  // em JS dá 0.30000000000000004, não 0.3. Sem arredondarCentavos nos dois
+  // lados da comparação, uma soma de pagamentos matematicamente correta
+  // seria rejeitada como "não bate" por causa só de sujeira de float.
+  test('não rejeita por sujeira de ponto flutuante quando a soma bate no centavo', async () => {
+    tarifaRepository.findById.mockResolvedValue({
+      id: 1,
+      valor_hora: 0.3,
+      tolerancia_minutos: 0,
+      percentual_fracao: 100,
+      minutos_fracao: 60,
+      arredondamento: 0.01,
+    });
+
+    await movimentacaoService.registrarSaida({
+      movimentacaoId: 42,
+      usuarioId: 5,
+      pagamentos: [
+        { forma: 'dinheiro', valor: 0.1, valorRecebido: 0.1 },
+        { forma: 'pix', valor: 0.2 }, // 0.1 + 0.2 === 0.30000000000000004 em JS puro
+      ],
+      idempotencyKey: 'tok-1',
+    });
+
+    expect(movimentacaoRepository.registrarSaida).toHaveBeenCalledWith(
+      42,
+      expect.objectContaining({ valorCobrado: 0.3 }),
+      { fake: 'client' }
+    );
   });
 
   test('rejeita como corrida vencida quando o UPDATE condicional não afeta nenhuma linha', async () => {

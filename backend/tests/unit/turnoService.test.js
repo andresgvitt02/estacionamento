@@ -51,6 +51,24 @@ describe('turnoService.fechar', () => {
     await expect(turnoService.fechar(9, { usuarioId: 5 })).rejects.toThrow(/valorDeclarado/);
   });
 
+  test('rejeita valorDeclarado negativo', async () => {
+    await expect(turnoService.fechar(9, { usuarioId: 5, valorDeclarado: -10 })).rejects.toThrow(/valorDeclarado/);
+  });
+
+  test('aceita valorDeclarado igual a zero (não é tratado como "ausente")', async () => {
+    // Number(0) >= 0 é true, mas "!valorDeclarado" (checagem ingênua de
+    // falsy) trataria 0 como se não tivesse sido informado — este teste
+    // trava que a validação usa a comparação numérica certa.
+    const resultado = await turnoService.fechar(9, { usuarioId: 5, valorDeclarado: 0 });
+
+    expect(turnoRepository.fechar).toHaveBeenCalledWith(
+      9,
+      expect.objectContaining({ valorDeclarado: 0 }),
+      { fake: 'client' }
+    );
+    expect(resultado.divergencia).toBe(-50); // esperado 50 (só valor_inicial) - declarado 0
+  });
+
   test('valor_esperado = valor_inicial quando não há pagamentos', async () => {
     const resultado = await turnoService.fechar(9, { usuarioId: 5, valorDeclarado: 50 });
 
@@ -100,6 +118,30 @@ describe('turnoService.fechar', () => {
     const resultado = await turnoService.fechar(9, { usuarioId: 5, valorDeclarado: 75 });
 
     expect(resultado.divergencia).toBe(-5);
+  });
+
+  test('divergência positiva quando sobra dinheiro na gaveta em relação ao esperado', async () => {
+    pagamentoRepository.findByTurno.mockResolvedValue([{ forma: 'dinheiro', valor: 30, estorno_de_id: null }]);
+
+    // esperado = 50 + 30 = 80; declarado = 90 => sobraram 10 na gaveta
+    const resultado = await turnoService.fechar(9, { usuarioId: 5, valorDeclarado: 90 });
+
+    expect(resultado.divergencia).toBe(10);
+  });
+
+  test('soma vários pagamentos em dinheiro (não só um) no valor_esperado', async () => {
+    pagamentoRepository.findByTurno.mockResolvedValue([
+      { forma: 'dinheiro', valor: 20, estorno_de_id: null },
+      { forma: 'dinheiro', valor: 15, estorno_de_id: null },
+      { forma: 'pix', valor: 999, estorno_de_id: null }, // não deveria entrar na conta
+    ]);
+
+    await turnoService.fechar(9, { usuarioId: 5, valorDeclarado: 85 });
+
+    // valor_inicial (50) + dinheiro (20 + 15) = 85
+    expect(turnoRepository.fechar).toHaveBeenCalledWith(9, expect.objectContaining({ valorEsperado: 85 }), {
+      fake: 'client',
+    });
   });
 
   test('rejeita como corrida vencida quando o UPDATE condicional não afeta nenhuma linha', async () => {
