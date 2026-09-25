@@ -36,6 +36,15 @@ npm install
 cp .env.example .env      # ajuste DATABASE_URL se necessário
 createdb estacionamento   # ou crie o banco manualmente
 npm run migrate:up        # aplica as migrations em backend/migrations/
+
+# Banco novo não tem usuário nenhum, e POST /usuarios exige admin — este
+# script fala direto com a service, sem passar pela rota, pra criar o primeiro.
+node scripts/criar-admin.js "Seu Nome" seu@email.com senha123
+
+# Vagas e tarifa vigente pra ter o que mostrar no mapa (idempotente, roda de
+# novo sem duplicar).
+npm run seed:demo
+
 npm run dev                # sobe a API com reload automático
 ```
 
