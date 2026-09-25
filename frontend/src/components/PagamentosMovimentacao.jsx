@@ -44,6 +44,7 @@ export default function PagamentosMovimentacao({ movimentacaoId }) {
             <th>Forma</th>
             <th>Valor</th>
             <th>Quando</th>
+            <th>Motivo / autorizado por</th>
             <th></th>
           </tr>
         </thead>
@@ -59,6 +60,16 @@ export default function PagamentosMovimentacao({ movimentacaoId }) {
                   {formatarReais(pagamento.valor)}
                 </td>
                 <td>{formatarData(pagamento.criado_em)}</td>
+                <td>
+                  {/* Motivo e autor só existem em linha de estorno (CHECK no
+                      schema exige os dois juntos — ver migration 7); um
+                      pagamento normal nunca tem os dois preenchidos. */}
+                  {/* autorizado_por_nome não deveria vir nulo pra uma linha de
+                      estorno (usuário nunca é apagado, só desativado — ver
+                      usuarioRepository.js) — o "desconhecido" aqui é só
+                      defensivo, não um caso esperado. */}
+                  {ehEstorno ? `${pagamento.motivo_estorno} — ${pagamento.autorizado_por_nome ?? 'desconhecido'}` : '—'}
+                </td>
                 <td>
                   {!ehEstorno && !jaEstornado && (
                     <button

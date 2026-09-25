@@ -5,9 +5,17 @@ const pool = require('../config/db');
 // com estorno_de_id apontando para o pagamento revertido. `create` aceita um
 // client opcional para participar da transação de saída aberta pela service.
 
+// LEFT JOIN só pra trazer o nome de quem autorizou o estorno (autorizado_por_nome)
+// em vez de só o id cru — mesmo motivo do join em logAuditoriaRepository.js.
+// Pagamento normal não tem autorizado_por_id (fica NULL), por isso é LEFT e
+// não INNER: não pode sumir da lista um pagamento que nunca foi estornado.
 async function findByMovimentacao(movimentacaoId) {
   const { rows } = await pool.query(
-    'SELECT * FROM pagamentos WHERE movimentacao_id = $1 ORDER BY criado_em',
+    `SELECT p.*, u.nome AS autorizado_por_nome
+     FROM pagamentos p
+     LEFT JOIN usuarios u ON u.id = p.autorizado_por_id
+     WHERE p.movimentacao_id = $1
+     ORDER BY p.criado_em`,
     [movimentacaoId]
   );
   return rows;
