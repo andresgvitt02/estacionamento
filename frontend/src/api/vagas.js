@@ -17,3 +17,16 @@ export async function desbloquearVaga(id) {
   const { data } = await client.post(`/vagas/${id}/desbloquear`)
   return data
 }
+
+// Cadastro/edição de vaga (inclusive marcação PCD/idoso/mensalista, ver
+// CLAUDE.md "Interface") exige perfil admin no backend — configuração do
+// estacionamento não é ação de operador.
+export async function criarVaga(dados) {
+  const { data } = await client.post('/vagas', dados)
+  return data
+}
+
+export async function atualizarVaga(id, dados) {
+  const { data } = await client.put(`/vagas/${id}`, dados)
+  return data
+}

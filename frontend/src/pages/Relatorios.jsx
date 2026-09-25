@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { buscarMovimentacoesPorPeriodo, buscarResumoTurnos, buscarTotaisPorFormaPagamento } from '../api/relatorios'
 import { formatarReais, formatarData } from '../utils/formato'
+import { useAuth } from '../context/AuthContext'
+import Modal from '../components/Modal'
+import PagamentosMovimentacao from '../components/PagamentosMovimentacao'
 
 const NOMES_FORMA = { dinheiro: 'Dinheiro', pix: 'PIX', cartao: 'Cartão' }
 
@@ -22,12 +25,14 @@ function agora() {
 }
 
 export default function Relatorios() {
+  const { usuario } = useAuth()
   const [periodo, setPeriodo] = useState({ inicio: inicioDeHoje(), fim: agora() })
   const [turnos, setTurnos] = useState(null)
   const [movimentacoes, setMovimentacoes] = useState(null)
   const [porForma, setPorForma] = useState(null)
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
+  const [movimentacaoParaPagamentos, setMovimentacaoParaPagamentos] = useState(null)
 
   async function buscar(evento) {
     evento?.preventDefault()
@@ -167,6 +172,7 @@ export default function Relatorios() {
                     <th>Entrada</th>
                     <th>Saída</th>
                     <th>Valor cobrado</th>
+                    {usuario.perfil === 'admin' && <th></th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -177,6 +183,17 @@ export default function Relatorios() {
                       <td>{formatarData(mov.entrada)}</td>
                       <td>{formatarData(mov.saida)}</td>
                       <td>{formatarReais(mov.valor_cobrado)}</td>
+                      {usuario.perfil === 'admin' && (
+                        <td>
+                          <button
+                            type="button"
+                            className="botao-link"
+                            onClick={() => setMovimentacaoParaPagamentos(mov)}
+                          >
+                            Pagamentos
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -184,6 +201,21 @@ export default function Relatorios() {
             </div>
           )}
         </>
+      )}
+
+      {movimentacaoParaPagamentos && (
+        <Modal
+          titulo={`Pagamentos — vaga ${movimentacaoParaPagamentos.vaga_codigo}, placa ${movimentacaoParaPagamentos.placa}`}
+          onFechar={() => {
+            setMovimentacaoParaPagamentos(null)
+            // Um estorno muda os totais por forma de pagamento mostrados
+            // acima — recarrega o período ao fechar pra não deixar a tela
+            // com números defasados.
+            buscar()
+          }}
+        >
+          <PagamentosMovimentacao movimentacaoId={movimentacaoParaPagamentos.id} />
+        </Modal>
       )}
     </section>
   )

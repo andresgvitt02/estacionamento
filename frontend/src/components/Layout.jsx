@@ -27,6 +27,12 @@ export default function Layout() {
           <NavLink to="/turno">{turnoAtivo ? 'Fechar caixa' : 'Abrir turno'}</NavLink>
           <NavLink to="/tarifas">Tarifas</NavLink>
           <NavLink to="/relatorios">Relatórios</NavLink>
+          {usuario.perfil === 'admin' && (
+            <>
+              <NavLink to="/vagas">Vagas</NavLink>
+              <NavLink to="/usuarios">Usuários</NavLink>
+            </>
+          )}
         </nav>
         <div className="app-sessao">
           <span>

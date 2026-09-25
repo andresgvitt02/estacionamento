@@ -457,6 +457,11 @@ a {
   font-weight: 600;
 }
 
+.tabela-acoes {
+  display: flex;
+  gap: 0.75rem;
+}
+
 /* --- Modal --- */
 
 .modal-backdrop {
