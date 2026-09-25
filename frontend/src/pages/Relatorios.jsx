@@ -4,6 +4,7 @@ import { formatarReais, formatarData } from '../utils/formato'
 import { useAuth } from '../context/AuthContext'
 import Modal from '../components/Modal'
 import PagamentosMovimentacao from '../components/PagamentosMovimentacao'
+import LogAuditoria from '../components/LogAuditoria'
 
 const NOMES_FORMA = { dinheiro: 'Dinheiro', pix: 'PIX', cartao: 'Cartão' }
 
@@ -33,6 +34,11 @@ export default function Relatorios() {
   const [carregando, setCarregando] = useState(false)
   const [erro, setErro] = useState(null)
   const [movimentacaoParaPagamentos, setMovimentacaoParaPagamentos] = useState(null)
+  // { titulo, entidade, entidadeId } — genérico pra atender tanto o log de
+  // uma movimentação quanto o de um turno com o mesmo Modal (ver
+  // logAuditoriaRoutes.js: a rota já é GET /log-auditoria/:entidade/:entidadeId
+  // pra qualquer entidade, não só uma).
+  const [logParaExibir, setLogParaExibir] = useState(null)
 
   async function buscar(evento) {
     evento?.preventDefault()
@@ -138,6 +144,7 @@ export default function Relatorios() {
                     <th>Declarado</th>
                     <th>Divergência</th>
                     <th>Observações</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -152,6 +159,21 @@ export default function Relatorios() {
                         {formatarReais(turno.divergencia)}
                       </td>
                       <td>{turno.observacoes ?? '—'}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="botao-link"
+                          onClick={() =>
+                            setLogParaExibir({
+                              titulo: `Log — fechamento de ${turno.usuario_nome}`,
+                              entidade: 'turno',
+                              entidadeId: turno.id,
+                            })
+                          }
+                        >
+                          Log
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -172,7 +194,7 @@ export default function Relatorios() {
                     <th>Entrada</th>
                     <th>Saída</th>
                     <th>Valor cobrado</th>
-                    {usuario.perfil === 'admin' && <th></th>}
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -183,17 +205,32 @@ export default function Relatorios() {
                       <td>{formatarData(mov.entrada)}</td>
                       <td>{formatarData(mov.saida)}</td>
                       <td>{formatarReais(mov.valor_cobrado)}</td>
-                      {usuario.perfil === 'admin' && (
-                        <td>
+                      <td>
+                        <div className="tabela-acoes">
                           <button
                             type="button"
                             className="botao-link"
-                            onClick={() => setMovimentacaoParaPagamentos(mov)}
+                            onClick={() =>
+                              setLogParaExibir({
+                                titulo: `Log — vaga ${mov.vaga_codigo}, placa ${mov.placa}`,
+                                entidade: 'movimentacao',
+                                entidadeId: mov.id,
+                              })
+                            }
                           >
-                            Pagamentos
+                            Log
                           </button>
-                        </td>
-                      )}
+                          {usuario.perfil === 'admin' && (
+                            <button
+                              type="button"
+                              className="botao-link"
+                              onClick={() => setMovimentacaoParaPagamentos(mov)}
+                            >
+                              Pagamentos
+                            </button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -215,6 +252,12 @@ export default function Relatorios() {
           }}
         >
           <PagamentosMovimentacao movimentacaoId={movimentacaoParaPagamentos.id} />
+        </Modal>
+      )}
+
+      {logParaExibir && (
+        <Modal titulo={logParaExibir.titulo} onFechar={() => setLogParaExibir(null)}>
+          <LogAuditoria entidade={logParaExibir.entidade} entidadeId={logParaExibir.entidadeId} />
         </Modal>
       )}
     </section>
