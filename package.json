@@ -9,5 +9,9 @@
     "build": "npm ci --omit=dev --prefix backend && npm ci --prefix frontend && npm run build --prefix frontend",
     "migrate": "npm run migrate:up --prefix backend",
     "start": "npm start --prefix backend"
+  },
+  "devDependencies": {
+    "@neon/config": "^1.9.5",
+    "@neon/env": "^1.6.6"
   }
 }

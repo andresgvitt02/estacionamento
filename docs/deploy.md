@@ -38,11 +38,17 @@ Health check para o provedor: `GET /api/health` → `{"status":"ok"}`.
 O `render.yaml` na raiz descreve o serviço (Blueprint). As migrations rodam
 sozinhas no `preDeployCommand` a cada deploy.
 
-1. **Neon:** criar o projeto na região `AWS US East (N. Virginia)` e copiar
-   a connection string (já vem com `?sslmode=require`).
+1. **Neon:** projeto `guarita` (`solitary-bonus-69499066`), região
+   `aws-us-east-1`, branch `production`, já vinculado ao repositório
+   (`neon.ts` + `.neon`). `npx neon@latest env pull` grava as URLs em
+   `.env.local` (ignorado pelo git).
 2. **Render:** New → Blueprint → escolher o repositório. Ele lê o
-   `render.yaml` e pede só o `DATABASE_URL` (colar a do Neon). O
-   `JWT_SECRET` é gerado pelo próprio Render.
+   `render.yaml` e pede só o `DATABASE_URL`. Usar a **`DATABASE_URL_UNPOOLED`**
+   do `.env.local` (conexão direta, sem `-pooler` no host: as migrations usam
+   lock de sessão, que o pooler em modo transação não garante), trocando
+   `sslmode=require` por **`sslmode=verify-full`**: é o que o `pg` já faz hoje,
+   mas o `require` muda de significado no `pg` 9. O `JWT_SECRET` é gerado
+   pelo próprio Render.
 3. **Primeiro admin e dados de demonstração**, rodados da máquina local
    contra o Neon (o `dotenv` não sobrescreve variável já definida no
    terminal, então o `.env` local não é tocado):
