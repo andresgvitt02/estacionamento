@@ -86,3 +86,84 @@ export function IconFechar(props) {
     </svg>
   )
 }
+
+// --- Navegação (Layout.jsx) — sempre acompanhados do nome da tela ---
+
+export function IconMapa(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  )
+}
+
+export function IconCaixa(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="3" y="6" width="18" height="13" rx="2" />
+      <path d="M3 10h18" />
+      <path d="M16 15h2" />
+    </svg>
+  )
+}
+
+export function IconTarifa(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M3 12V4a1 1 0 0 1 1-1h8l9 9-9 9-9-9Z" />
+      <circle cx="8" cy="8" r="1.5" />
+    </svg>
+  )
+}
+
+export function IconRelatorio(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 20V10" />
+      <path d="M10 20V4" />
+      <path d="M16 20v-7" />
+      <path d="M3 20h18" />
+    </svg>
+  )
+}
+
+export function IconVaga(props) {
+  return (
+    <svg {...base} {...props}>
+      <rect x="4" y="3" width="16" height="18" rx="2" />
+      <path d="M10 16V8h3a2.5 2.5 0 0 1 0 5h-3" />
+    </svg>
+  )
+}
+
+export function IconUsuarios(props) {
+  return (
+    <svg {...base} {...props}>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20a6.5 6.5 0 0 1 13 0" />
+      <path d="M16 4.5a3.5 3.5 0 0 1 0 7" />
+      <path d="M18 14a6.5 6.5 0 0 1 3.5 6" />
+    </svg>
+  )
+}
+
+export function IconSair(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3" />
+      <path d="M10 16l-4-4 4-4" />
+      <path d="M6 12h10" />
+    </svg>
+  )
+}
+
+export function IconMenu(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 7h16M4 12h16M4 17h16" />
+    </svg>
+  )
+}

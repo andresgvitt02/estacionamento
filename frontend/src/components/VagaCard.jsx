@@ -1,16 +1,6 @@
 import StatusBadge from './StatusBadge'
 import TipoBadge from './TipoBadge'
-
-// Deriva o status no front do mesmo jeito que o backend deriva no banco:
-// vaga bloqueada tem prioridade, senão existe movimentação aberta (ocupada)
-// ou não (livre). Não é o front decidindo o estado — é só lendo o que
-// vagaRepository.listarComStatus já calculou (movimentacao_id presente ou
-// não), ver CLAUDE.md "Vaga não tem coluna ocupada".
-function derivarStatus(vaga) {
-  if (vaga.bloqueada) return 'bloqueada'
-  if (vaga.movimentacao_id) return 'ocupada'
-  return 'livre'
-}
+import { derivarStatus } from '../utils/statusVaga'
 
 export default function VagaCard({ vaga, onRegistrarEntrada, onRegistrarSaida, onBloquear, onDesbloquear }) {
   const status = derivarStatus(vaga)

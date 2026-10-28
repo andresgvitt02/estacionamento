@@ -27,8 +27,15 @@ export default function Login() {
 
   return (
     <div className="pagina-login">
-      <section className="pagina-estreita">
-        <h1>Estacionamento</h1>
+      <section className="login-cartao">
+        <h1 className="login-titulo">
+          <img
+            src="/logo.png"
+            alt="Guarita — Gestão inteligente de estacionamento"
+            className="login-logo"
+          />
+        </h1>
+        <p className="login-chamada">Entre com sua conta para abrir o turno.</p>
 
         <form onSubmit={aoSubmeter} className="formulario">
           <label htmlFor="email">E-mail</label>
@@ -59,7 +66,7 @@ export default function Login() {
           )}
 
           <div className="formulario-acoes">
-            <button type="submit" className="botao-primario" disabled={enviando}>
+            <button type="submit" className="botao-primario botao-largo" disabled={enviando}>
               {enviando ? 'Entrando...' : 'Entrar'}
             </button>
           </div>
