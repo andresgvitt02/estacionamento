@@ -1,0 +1,32 @@
+# Blueprint do Render: um único web service que serve a API e o build do
+# React (ver docs/deploy.md). O banco fica no Neon — DATABASE_URL é
+# preenchida à mão no painel, nunca commitada.
+services:
+  - type: web
+    name: guarita
+    runtime: node
+    plan: starter
+    # Mesma região do banco no Neon (us-east): cada consulta atravessaria o
+    # oceano se ficassem em continentes diferentes.
+    region: virginia
+    branch: main
+    buildCommand: npm run build
+    # Roda depois do build e antes de a versão nova entrar no ar: se uma
+    # migration falhar, o deploy para e a versão anterior continua servindo.
+    preDeployCommand: npm run migrate
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 12h
+      # Sessão do WhatsApp não persiste no disco do Render (ver docs/deploy.md).
+      - key: NOTIFICACAO_ATIVA
+        value: "false"
