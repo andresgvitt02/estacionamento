@@ -1,0 +1,13 @@
+{
+  "name": "estacionamento",
+  "private": true,
+  "description": "Raiz do monorepo: scripts usados pela hospedagem (build do front + start da API)",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "npm ci --omit=dev --prefix backend && npm ci --prefix frontend && npm run build --prefix frontend",
+    "migrate": "npm run migrate:up --prefix backend",
+    "start": "npm start --prefix backend"
+  }
+}
