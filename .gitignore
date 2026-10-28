@@ -29,3 +29,8 @@ venv/
 # Sessão autenticada do WhatsApp (Baileys) — é credencial, nunca comitar
 backend/scripts/.baileys_auth/
 backend/src/notificacao/canais/.baileys_auth/
+
+# Variáveis puxadas pelo CLI do Neon (contêm a senha do banco)
+.env.local
+.env.*.local
+.neon
