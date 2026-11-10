@@ -86,8 +86,8 @@ export default function Tarifas() {
       <div className="pagina-colunas">
         <form onSubmit={aoSubmeter} className="formulario">
           <p className="formulario-subtitulo">
-            Cadastrar nova tarifa. Não edita a atual — encerra a vigência dela e cria esta como a nova vigente (ver
-            CLAUDE.md, "Tarifa tem vigência temporal").
+            Cadastrar nova tarifa. A tarifa atual não é editada: a vigência dela é encerrada e esta passa a valer
+            daqui em diante. As saídas já registradas continuam com o valor que foi cobrado.
           </p>
 
           <label htmlFor="descricao">Descrição *</label>

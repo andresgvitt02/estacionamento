@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { buscarMeuTurnoAberto } from '../api/turnos'
 import { useAuth } from '../context/AuthContext'
 import { useTurnoAtivo } from '../context/TurnoContext'
 import {
@@ -25,7 +26,25 @@ function iniciais(nome) {
 export default function Layout() {
   const navigate = useNavigate()
   const { usuario, logout } = useAuth()
-  const { turnoAtivo, encerrarSessaoLocal } = useTurnoAtivo()
+  const { turnoAtivo, setTurnoAtivo, encerrarSessaoLocal } = useTurnoAtivo()
+
+  // O banco é quem sabe se o turno está aberto; o navegador só guarda um
+  // ponteiro, que some ao sair ou ao trocar de computador. Ao entrar,
+  // alinha o ponteiro com o servidor. Falha de rede mantém o que já havia.
+  // Roda só quando muda o usuário: rodar de novo após fechar o caixa
+  // apagaria o resumo do fechamento antes de o operador ler (ver
+  // FecharTurno.jsx).
+  useEffect(() => {
+    let cancelado = false
+    buscarMeuTurnoAberto()
+      .then((turno) => {
+        if (!cancelado) setTurnoAtivo(turno ? { turnoId: turno.id } : null)
+      })
+      .catch(() => {})
+    return () => {
+      cancelado = true
+    }
+  }, [usuario?.id])
   // Só tem efeito em tela estreita, onde o menu vira uma gaveta abaixo da
   // barra superior (ver .app-sidebar no index.css).
   const [menuAberto, setMenuAberto] = useState(false)

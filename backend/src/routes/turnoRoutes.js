@@ -13,6 +13,17 @@ router.get(
   })
 );
 
+// Turno aberto de quem está logado (usuário vem do token). O front guarda o
+// turno ativo só no navegador; ao entrar, ele consulta aqui pra não mostrar
+// "sem turno" quando o banco tem um aberto (ex.: saiu sem fechar o caixa, ou
+// abriu em outro computador). Fica antes de '/:id' pra não cair nele.
+router.get(
+  '/meu-aberto',
+  asyncHandler(async (req, res) => {
+    res.json(await turnoRepository.findAbertoPorUsuario(req.usuario.id));
+  })
+);
+
 router.get(
   '/:id',
   asyncHandler(async (req, res) => {
