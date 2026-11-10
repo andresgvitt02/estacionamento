@@ -1050,6 +1050,12 @@ a {
   box-shadow: var(--sombra-elevada);
 }
 
+/* Recebe foco só como fallback quando o modal não tem campo; não é
+   interativo, então não precisa do contorno de foco. */
+.modal-conteudo:focus {
+  outline: none;
+}
+
 .modal-cabecalho {
   display: flex;
   justify-content: space-between;
