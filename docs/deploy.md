@@ -28,7 +28,8 @@ Health check para o provedor: `GET /api/health` → `{"status":"ok"}`.
 | `JWT_SECRET`                 | valor aleatório próprio (o servidor **recusa subir** com o do `.env.example`) |
 | `JWT_EXPIRES_IN`             | ex.: `12h`                                     |
 | `PORT`                       | normalmente definido pelo próprio provedor     |
-| `NOTIFICACAO_ATIVA`          | `false` no site público de demonstração        |
+| `NOTIFICACAO_ATIVA`          | `true` (precisa do disco persistente, ver abaixo) |
+| `WHATSAPP_AUTH_DIR`          | `/var/data/baileys_auth` (subpasta do disco persistente) |
 | `NOTIFICACAO_INTERVALO_CRON` | só se a notificação estiver ativa              |
 | `NOTIFICACAO_LIMITE_HORAS`   | só se a notificação estiver ativa              |
 | `CORS_ORIGEM`                | deixar vazio (front e API no mesmo domínio)    |
@@ -63,9 +64,23 @@ sozinhas no `preDeployCommand` a cada deploy.
 
 O banco local de desenvolvimento não é copiado: ele tem só dados de teste.
 
-## Por que a notificação fica desligada no site público
+## Notificação (WhatsApp) no Render
 
-A sessão do WhatsApp (Baileys) fica gravada em disco (`.baileys_auth/`), e o
-disco da maioria dos hosts gratuitos é apagado a cada deploy/reinício: o QR
-code teria que ser lido de novo toda vez. Na demonstração da banca, a
-notificação roda localmente.
+A sessão do WhatsApp (Baileys) fica gravada em arquivos, e o disco normal do
+Render é apagado a cada deploy/reinício. Por isso o serviço tem um **disco
+persistente** montado em `/var/data`, e a variável `WHATSAPP_AUTH_DIR`
+aponta a sessão para `/var/data/baileys_auth`.
+
+Para parear (ou parear de novo, se a sessão cair):
+
+1. Entre no site como admin e abra **WhatsApp** no menu.
+2. No celular do chip: WhatsApp → Aparelhos conectados → Conectar um aparelho
+   → escaneie o QR da tela.
+3. A tela passa a mostrar "Conectado".
+
+Se o aparelho for removido no celular, o sistema apaga a sessão velha sozinho
+e a tela volta a mostrar um QR novo.
+
+Cuidado: o pareamento do servidor é um aparelho conectado diferente do
+pareamento local. Os dois podem existir ao mesmo tempo (o WhatsApp aceita até
+4 aparelhos), mas cada um manda notificação para as entradas do **seu** banco.

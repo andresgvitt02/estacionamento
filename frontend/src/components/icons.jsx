@@ -167,3 +167,11 @@ export function IconMenu(props) {
     </svg>
   )
 }
+
+export function IconMensagem(props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 5h16a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-5 4V6a1 1 0 0 1 1-1Z" />
+    </svg>
+  )
+}

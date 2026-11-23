@@ -7,6 +7,7 @@ import Tarifas from './pages/Tarifas'
 import Relatorios from './pages/Relatorios'
 import Usuarios from './pages/Usuarios'
 import Vagas from './pages/Vagas'
+import WhatsApp from './pages/WhatsApp'
 import { useAuth } from './context/AuthContext'
 
 // Sem usuário logado (JWT), manda pra /login antes de renderizar qualquer
@@ -70,6 +71,14 @@ function App() {
           element={
             <RotaAdmin>
               <Usuarios />
+            </RotaAdmin>
+          }
+        />
+        <Route
+          path="whatsapp"
+          element={
+            <RotaAdmin>
+              <WhatsApp />
             </RotaAdmin>
           }
         />

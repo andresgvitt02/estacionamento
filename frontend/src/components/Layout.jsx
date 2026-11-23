@@ -7,6 +7,7 @@ import {
   IconCaixa,
   IconMapa,
   IconMenu,
+  IconMensagem,
   IconRelatorio,
   IconSair,
   IconTarifa,
@@ -108,6 +109,9 @@ export default function Layout() {
                 </NavLink>
                 <NavLink to="/usuarios" onClick={fecharMenu}>
                   <IconUsuarios /> Usuários
+                </NavLink>
+                <NavLink to="/whatsapp" onClick={fecharMenu}>
+                  <IconMensagem /> WhatsApp
                 </NavLink>
               </>
             )}

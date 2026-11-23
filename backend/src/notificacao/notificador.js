@@ -13,4 +13,11 @@ async function enviar(destino, mensagem) {
   return canal.enviar(destino, mensagem);
 }
 
-module.exports = { enviar };
+// Estado da conexão do canal ({ conectado, qr }) para a tela de
+// administração. O formato é genérico de propósito: um canal sem QR (e-mail,
+// por exemplo) devolveria qr: null.
+async function status() {
+  return canal.status();
+}
+
+module.exports = { enviar, status };
