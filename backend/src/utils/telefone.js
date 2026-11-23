@@ -4,7 +4,7 @@
 // O campo da tela de entrada não tem máscara, e o operador costuma digitar
 // só DDD + número ("51 99999-8888"). Sem o 55, o WhatsApp não encontra o
 // número e a notificação nunca sai — foi o que aconteceu no teste com o
-// celular em 10/11/2026 (telefone gravado como "51995575290").
+// celular em 10/11/2026 (telefone gravado como "51999998888").
 //
 // Aceita:
 //   10 ou 11 dígitos (DDD + fixo/celular)       -> recebe o 55 na frente
