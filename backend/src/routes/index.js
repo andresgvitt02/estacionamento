@@ -9,6 +9,7 @@ const movimentacaoRoutes = require('./movimentacaoRoutes');
 const pagamentoRoutes = require('./pagamentoRoutes');
 const logAuditoriaRoutes = require('./logAuditoriaRoutes');
 const relatorioRoutes = require('./relatorioRoutes');
+const notificacaoRoutes = require('./notificacaoRoutes');
 
 const router = express.Router();
 
@@ -21,5 +22,6 @@ router.use('/movimentacoes', movimentacaoRoutes);
 router.use('/pagamentos', pagamentoRoutes);
 router.use('/log-auditoria', logAuditoriaRoutes);
 router.use('/relatorios', relatorioRoutes);
+router.use('/notificacao', notificacaoRoutes);
 
 module.exports = router;

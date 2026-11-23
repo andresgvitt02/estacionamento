@@ -27,6 +27,15 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 12h
-      # Sessão do WhatsApp não persiste no disco do Render (ver docs/deploy.md).
+      # Sessão do WhatsApp fica no disco persistente abaixo (ver docs/deploy.md).
+      # Subpasta do disco, não o ponto de montagem: ao deslogar, a pasta é apagada.
+      - key: WHATSAPP_AUTH_DIR
+        value: /var/data/baileys_auth
       - key: NOTIFICACAO_ATIVA
-        value: "false"
+        value: "true"
+    # Único lugar do Render que sobrevive a deploy/reinício. Sem ele, o QR do
+    # WhatsApp teria que ser lido de novo a cada deploy.
+    disk:
+      name: whatsapp
+      mountPath: /var/data
+      sizeGB: 1
