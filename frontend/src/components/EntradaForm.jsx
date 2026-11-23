@@ -66,11 +66,12 @@ export default function EntradaForm({ vaga, onSucesso, onCancelar }) {
         value={telefone}
         onChange={(e) => setTelefone(e.target.value)}
         autoComplete="off"
-        placeholder="51999998888"
+        inputMode="tel"
+        placeholder="(51) 99999-8888"
       />
       <p className="formulario-ajuda">
-        Usado só para avisar se o veículo passar do tempo de permanência configurado. Fornecer é
-        opcional e não impede a entrada.
+        DDD + número, com ou sem pontuação. Usado só para avisar se o veículo passar do tempo de
+        permanência configurado. Fornecer é opcional e não impede a entrada.
       </p>
 
       {erro && (

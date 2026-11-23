@@ -6,6 +6,7 @@ const {
   useMultiFileAuthState,
   DisconnectReason,
 } = require('@whiskeysockets/baileys');
+const { normalizarTelefone } = require('../../utils/telefone');
 
 // Implementação do canal WhatsApp para notificador.enviar() (ver
 // ../notificador.js e CLAUDE.md, "Notificação automática"). Ninguém fora
@@ -89,7 +90,9 @@ async function enviar(destino, mensagem) {
   // O campo de telefone não tem máscara (ver EntradaForm.jsx) — um número
   // digitado como "(51) 99999-8888" fazia essa consulta falhar sempre, mesmo
   // sendo válido, e a notificação nunca saía (bug encontrado em revisão).
-  const destinoNormalizado = destino.replace(/\D/g, '');
+  // Também acrescenta o 55 quando falta (telefones gravados antes de a
+  // entrada passar a normalizar — ver utils/telefone.js).
+  const destinoNormalizado = normalizarTelefone(destino) || String(destino).replace(/\D/g, '');
 
   const [resultado] = await sock.onWhatsApp(destinoNormalizado);
   if (!resultado?.exists) {

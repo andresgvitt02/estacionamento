@@ -9,6 +9,7 @@ const logAuditoriaRepository = require('../repositories/logAuditoriaRepository')
 const tarifaService = require('./tarifaService');
 const ApiError = require('../errors/ApiError');
 const { arredondarCentavos } = require('../utils/dinheiro');
+const { normalizarTelefone } = require('../utils/telefone');
 
 // Entrada: validação de vaga/veículo + achar a tarifa vigente. É CRUD com
 // checagem de estado, não decide valor nenhum — por isso está implementada.
@@ -30,6 +31,18 @@ async function registrarEntrada({ veiculo, vagaId, usuarioId, telefoneContato })
 
   const vagaOcupada = await movimentacaoRepository.findAbertaPorVaga(vagaId);
   if (vagaOcupada) throw new ApiError(409, 'vaga já está ocupada');
+
+  // Telefone é opcional (LGPD — ver CLAUDE.md): vazio vira null e não impede
+  // a entrada. Se veio preenchido, é gravado já com o 55 na frente (ver
+  // utils/telefone.js); se veio num formato que não dá pra usar, avisa o
+  // operador em vez de gravar um número para o qual a notificação nunca sai.
+  let telefoneNormalizado = null;
+  if (telefoneContato?.trim()) {
+    telefoneNormalizado = normalizarTelefone(telefoneContato);
+    if (!telefoneNormalizado) {
+      throw new ApiError(400, 'telefone inválido: informe DDD + número (ex.: 51 99999-8888) ou deixe em branco');
+    }
+  }
 
   // Normaliza a placa aqui, não só no frontend (EntradaForm.jsx já faz
   // trim+uppercase, mas o servidor não pode confiar nisso — mesmo princípio
@@ -58,9 +71,7 @@ async function registrarEntrada({ veiculo, vagaId, usuarioId, telefoneContato })
     tarifaId: tarifa.id,
     turnoId: turno.id,
     usuarioId,
-    // Opcional (LGPD — ver CLAUDE.md): string vazia vira null, não fica
-    // gravado como valor "preenchido" à toa.
-    telefoneContato: telefoneContato?.trim() || null,
+    telefoneContato: telefoneNormalizado,
   });
 }
 

@@ -60,3 +60,39 @@ describe('movimentacaoService.registrarEntrada — normalização de placa', () 
     expect(veiculoRepository.create).not.toHaveBeenCalled();
   });
 });
+
+// Bug do teste com o celular (10/11/2026): o telefone foi gravado sem o 55
+// ("51995575290") e a notificação nunca saiu.
+describe('movimentacaoService.registrarEntrada — telefone de contato', () => {
+  beforeEach(() => {
+    veiculoRepository.findByPlaca.mockResolvedValue([]);
+    veiculoRepository.create.mockResolvedValue({ id: 5 });
+  });
+
+  const entrar = (telefoneContato) =>
+    movimentacaoService.registrarEntrada({
+      veiculo: { placa: 'ABC1234', tipo: 'carro' },
+      vagaId: 1,
+      usuarioId: 5,
+      telefoneContato,
+    });
+
+  test('grava o telefone com o 55 na frente quando o operador digita só DDD + número', async () => {
+    await entrar('(51) 99557-5290');
+    expect(movimentacaoRepository.registrarEntrada).toHaveBeenCalledWith(
+      expect.objectContaining({ telefoneContato: '5551995575290' })
+    );
+  });
+
+  test('telefone vazio não impede a entrada e é gravado como null', async () => {
+    await entrar('   ');
+    expect(movimentacaoRepository.registrarEntrada).toHaveBeenCalledWith(
+      expect.objectContaining({ telefoneContato: null })
+    );
+  });
+
+  test('telefone em formato irreconhecível é recusado com mensagem clara, sem gravar nada', async () => {
+    await expect(entrar('12345')).rejects.toThrow('telefone inválido');
+    expect(movimentacaoRepository.registrarEntrada).not.toHaveBeenCalled();
+  });
+});
