@@ -10,6 +10,7 @@ const tarifaService = require('./tarifaService');
 const ApiError = require('../errors/ApiError');
 const { arredondarCentavos } = require('../utils/dinheiro');
 const { normalizarTelefone } = require('../utils/telefone');
+const confirmacaoEntrada = require('../notificacao/confirmacaoEntrada');
 
 // Entrada: validação de vaga/veículo + achar a tarifa vigente. É CRUD com
 // checagem de estado, não decide valor nenhum — por isso está implementada.
@@ -65,7 +66,7 @@ async function registrarEntrada({ veiculo, vagaId, usuarioId, telefoneContato })
   const tarifa = await tarifaRepository.buscarVigente();
   if (!tarifa) throw new ApiError(422, 'nenhuma tarifa vigente cadastrada');
 
-  return movimentacaoRepository.registrarEntrada({
+  const movimentacao = await movimentacaoRepository.registrarEntrada({
     veiculoId: veiculoRegistrado.id,
     vagaId,
     tarifaId: tarifa.id,
@@ -73,6 +74,16 @@ async function registrarEntrada({ veiculo, vagaId, usuarioId, telefoneContato })
     usuarioId,
     telefoneContato: telefoneNormalizado,
   });
+
+  // Só depois de gravada: a confirmação vai em segundo plano e não segura a
+  // resposta nem desfaz a entrada se falhar (ver confirmacaoEntrada.js).
+  confirmacaoEntrada.enviarConfirmacao({
+    placa: veiculoNormalizado.placa,
+    entrada: movimentacao.entrada,
+    telefone: telefoneNormalizado,
+  });
+
+  return movimentacao;
 }
 
 // ATENÇÃO (ver CLAUDE.md, "Como me ajudar neste projeto"): esta função é uma

@@ -2,11 +2,11 @@ const { normalizarTelefone } = require('../../src/utils/telefone');
 
 describe('normalizarTelefone', () => {
   test.each([
-    ['51995575290', '5551995575290'], // DDD + celular, sem 55 (caso do bug)
-    ['(51) 99557-5290', '5551995575290'], // com pontuação
+    ['51999998888', '5551999998888'], // DDD + celular, sem 55 (caso do bug)
+    ['(51) 99999-8888', '5551999998888'], // com pontuação
     ['5136261234', '555136261234'], // DDD + fixo
-    ['5551995575290', '5551995575290'], // já completo
-    ['+55 51 99557-5290', '5551995575290'], // com + e espaços
+    ['5551999998888', '5551999998888'], // já completo
+    ['+55 51 99999-8888', '5551999998888'], // com + e espaços
   ])('%s -> %s', (entrada, esperado) => {
     expect(normalizarTelefone(entrada)).toBe(esperado);
   });

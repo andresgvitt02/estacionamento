@@ -2,6 +2,9 @@
 // encontrado em revisão: busca por placa era case-sensitive e só o frontend
 // normalizava, então "abc1234" driblava o check de "veículo já está dentro").
 
+// Confirmação de entrada (ver notificacao/confirmacaoEntrada.js) chega no
+// notificador → whatsappCanal → Baileys, que é ESM puro e quebra o Jest.
+jest.mock('../../src/notificacao/notificador', () => ({ enviar: jest.fn().mockResolvedValue() }));
 jest.mock('../../src/repositories/turnoRepository', () => ({ findAbertoPorUsuario: jest.fn() }));
 jest.mock('../../src/repositories/vagaRepository', () => ({ findById: jest.fn() }));
 jest.mock('../../src/repositories/veiculoRepository', () => ({ findByPlaca: jest.fn(), create: jest.fn() }));
@@ -62,7 +65,7 @@ describe('movimentacaoService.registrarEntrada — normalização de placa', () 
 });
 
 // Bug do teste com o celular (10/11/2026): o telefone foi gravado sem o 55
-// ("51995575290") e a notificação nunca saiu.
+// ("51999998888") e a notificação nunca saiu.
 describe('movimentacaoService.registrarEntrada — telefone de contato', () => {
   beforeEach(() => {
     veiculoRepository.findByPlaca.mockResolvedValue([]);
@@ -78,9 +81,9 @@ describe('movimentacaoService.registrarEntrada — telefone de contato', () => {
     });
 
   test('grava o telefone com o 55 na frente quando o operador digita só DDD + número', async () => {
-    await entrar('(51) 99557-5290');
+    await entrar('(51) 99999-8888');
     expect(movimentacaoRepository.registrarEntrada).toHaveBeenCalledWith(
-      expect.objectContaining({ telefoneContato: '5551995575290' })
+      expect.objectContaining({ telefoneContato: '5551999998888' })
     );
   });
 
@@ -94,5 +97,53 @@ describe('movimentacaoService.registrarEntrada — telefone de contato', () => {
   test('telefone em formato irreconhecível é recusado com mensagem clara, sem gravar nada', async () => {
     await expect(entrar('12345')).rejects.toThrow('telefone inválido');
     expect(movimentacaoRepository.registrarEntrada).not.toHaveBeenCalled();
+  });
+});
+
+describe('movimentacaoService.registrarEntrada — confirmação por WhatsApp', () => {
+  const notificador = require('../../src/notificacao/notificador');
+
+  beforeEach(() => {
+    veiculoRepository.findByPlaca.mockResolvedValue([]);
+    veiculoRepository.create.mockResolvedValue({ id: 5 });
+    movimentacaoRepository.registrarEntrada.mockResolvedValue({ id: 100, entrada: new Date() });
+    delete process.env.NOTIFICACAO_ATIVA;
+  });
+
+  const entrar = (telefoneContato) =>
+    movimentacaoService.registrarEntrada({
+      veiculo: { placa: 'abc1234', tipo: 'carro' },
+      vagaId: 1,
+      usuarioId: 5,
+      telefoneContato,
+    });
+
+  test('com telefone, manda a confirmação para o número normalizado', async () => {
+    await entrar('51 99999-8888');
+    expect(notificador.enviar).toHaveBeenCalledWith('5551999998888', expect.stringContaining('ABC1234'));
+  });
+
+  test('sem telefone, não manda nada', async () => {
+    await entrar('');
+    expect(notificador.enviar).not.toHaveBeenCalled();
+  });
+
+  test('falha no WhatsApp não impede a entrada', async () => {
+    notificador.enviar.mockRejectedValueOnce(new Error('canal fora do ar'));
+    const erroOriginal = console.error;
+    console.error = jest.fn();
+    try {
+      await expect(entrar('51 99999-8888')).resolves.toEqual(expect.objectContaining({ id: 100 }));
+      await new Promise((r) => setImmediate(r));
+      expect(console.error).toHaveBeenCalled();
+    } finally {
+      console.error = erroOriginal;
+    }
+  });
+
+  test('com NOTIFICACAO_ATIVA=false, não manda nada', async () => {
+    process.env.NOTIFICACAO_ATIVA = 'false';
+    await entrar('51 99999-8888');
+    expect(notificador.enviar).not.toHaveBeenCalled();
   });
 });

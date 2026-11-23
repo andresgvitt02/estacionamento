@@ -8,6 +8,9 @@
 // pedido explícito do autor (ver o "ATENÇÃO" em src/services/movimentacaoService.js)
 // — releia aquele comentário antes de mexer aqui.
 
+// Confirmação de entrada (ver notificacao/confirmacaoEntrada.js) chega no
+// notificador → whatsappCanal → Baileys, que é ESM puro e quebra o Jest.
+jest.mock('../../src/notificacao/notificador', () => ({ enviar: jest.fn().mockResolvedValue() }));
 jest.mock('../../src/repositories/veiculoRepository', () => ({}));
 jest.mock('../../src/repositories/vagaRepository', () => ({}));
 jest.mock('../../src/repositories/tarifaRepository', () => ({
